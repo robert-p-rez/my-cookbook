@@ -1,0 +1,32 @@
+site_name: Gabbys TikTok Cookbook
+
+theme:
+  name: material
+  palette:
+    primary: teal
+    accent: orange
+  features:
+    - navigation.indexes       # Allows clicking category folders
+    - search.suggest           # Search auto-complete
+    - search.highlight         # Highlights search terms
+    - content.action.view      # Adds view options
+  icon:
+    logo: material/chef-hat    # Adds a chef hat icon to the top left
+
+# Plugins allow the specific "Search" and "Print All" logic
+plugins:
+  - search
+  - tags     # Auto-generates a clickable index of "Sweet", "Savory", etc.
+  - print-site:
+      add_to_navigation: true  # Adds a "Print All Recipes" link to the menu
+
+
+# Markdown extensions to make recipes look better
+markdown_extensions:
+  - admonition                 # Good for "Chef's Notes" boxes
+  - pymdownx.details           # Collapsible sections
+  - attr_list                  # Allows resizing images
+
+
+extra_css:
+  - styles/recipes.css

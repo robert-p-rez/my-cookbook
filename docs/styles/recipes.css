@@ -1,0 +1,7 @@
+/* Two-column ingredient lists */
+.md-typeset .ingredients-cols {
+  columns: 2;
+  -webkit-columns: 2;
+  -moz-columns: 2;
+  column-gap: 2rem;      /* spacing between columns */
+}
