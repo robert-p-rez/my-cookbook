@@ -1,0 +1,20 @@
+services:
+  cookbook:
+    build: .
+    container_name: my-cookbook
+    ports:
+      - "8789:8789"
+    networks:
+      - cloudflare
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8789/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cloudflare:
+    name: ${CLOUDFLARE_NETWORK:-cloudflare}
+    external: true

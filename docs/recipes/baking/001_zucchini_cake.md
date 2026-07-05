@@ -7,8 +7,6 @@ tags:
 
 # Zucchini Carrot Cake
 
-![Zucchini Cake](path/to/your/image.jpg){ width="300" }
-
 ## Ingredients
 
 **The Cake**
