@@ -1,6 +1,7 @@
 # my-cookbook
 
-MkDocs cookbook site with a production container image and a simple Docker Compose deploy target for a Hetzner VM.
+MkDocs cookbook site for `https://gabbys-cookbook.perezdev.com`, with a
+production container image and a Docker Compose deploy target for a Hetzner VM.
 
 ## Local development
 
@@ -67,8 +68,8 @@ docker compose ps
 curl http://localhost:8789
 ```
 
-For a Cloudflare Tunnel running on the same Docker network, set the tunnel's
-service URL to `http://cookbook:8789`.
+For a Cloudflare Tunnel running on the same Docker network, publish the hostname
+`gabbys-cookbook.perezdev.com` with the service URL `http://cookbook:8789`.
 
 ## Recommended VM hardening
 

@@ -1,17 +1,23 @@
-site_name: Gabbys TikTok Cookbook
+site_name: Gabby's Cookbook
+site_url: https://gabbys-cookbook.perezdev.com/
+site_description: A personal collection of dependable dinners, bakes, appetizers, and family favorites.
+site_author: Gabby
+copyright: Copyright &copy; 2026 Gabby's Cookbook
 
 theme:
   name: material
+  favicon: assets/brand-mark.svg
+  logo: assets/brand-mark.svg
   palette:
     primary: teal
     accent: orange
   features:
     - navigation.indexes       # Allows clicking category folders
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
     - search.suggest           # Search auto-complete
     - search.highlight         # Highlights search terms
-    - content.action.view      # Adds view options
-  icon:
-    logo: material/chef-hat    # Adds a chef hat icon to the top left
 
 # Plugins allow the specific "Search" and "Print All" logic
 plugins:
@@ -26,7 +32,11 @@ markdown_extensions:
   - admonition                 # Good for "Chef's Notes" boxes
   - pymdownx.details           # Collapsible sections
   - attr_list                  # Allows resizing images
+  - md_in_html                 # Allows structured homepage sections
 
 
 extra_css:
   - styles/recipes.css
+
+extra:
+  generator: false
