@@ -21,28 +21,19 @@ def authenticated_client(tmp_path) -> TestClient:
     settings = Settings(
         upload_root=tmp_path,
         allowed_origin=ORIGIN,
-        access_team_domain="https://test.cloudflareaccess.com",
-        access_aud="test-aud",
-        access_allowed_emails=frozenset(),
-        access_auth_bypass=True,
     )
     return TestClient(create_app(settings), base_url=ORIGIN)
 
 
-def test_cloudflare_access_token_is_required(tmp_path) -> None:
-    settings = Settings(
-        upload_root=tmp_path,
-        allowed_origin=ORIGIN,
-        access_team_domain="https://test.cloudflareaccess.com",
-        access_aud="test-aud",
-        access_allowed_emails=frozenset(),
-        access_auth_bypass=False,
-    )
-    client = TestClient(create_app(settings), base_url=ORIGIN)
+def test_session_uses_trusted_proxy_identity(tmp_path) -> None:
+    client = authenticated_client(tmp_path)
 
-    rejected = client.get("/api/submissions")
-    assert rejected.status_code == 401
-    assert rejected.json()["detail"] == "Cloudflare Access authentication required"
+    response = client.get(
+        "/api/admin/session",
+        headers={"Cf-Access-Authenticated-User-Email": "gabby@example.com"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"authenticated": True, "email": "gabby@example.com"}
 
 
 def test_batch_upload_review_and_delete(tmp_path) -> None:

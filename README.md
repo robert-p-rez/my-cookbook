@@ -15,30 +15,33 @@ Then open `http://localhost:8789`.
 
 ## Production container
 
-Copy the environment template and add the token for a dedicated Cloudflare
-Tunnel:
+This Compose file follows the same deployment pattern as `compose (2).yml`:
+the app does not run its own `cloudflared` container. Instead, it attaches to
+the external Docker network named `perezdev_proxy`, where your existing
+Cloudflare/proxy connector can reach it.
+
+No Cloudflare token, Access AUD, or team-domain variables are required in this
+app's `.env` file. Keep that configuration in your existing proxy stack and in
+the Cloudflare dashboard.
+
+If you still want a local `.env` placeholder, copy the template:
 
 ```bash
 cp .env.example .env
 ```
 
-Set these values in `.env`:
+Create the external Docker network once if your proxy stack has not already
+created it:
 
-```dotenv
-CLOUDFLARE_TUNNEL_TOKEN=your-dedicated-tunnel-token
-CLOUDFLARE_ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
-CLOUDFLARE_ACCESS_AUD=your-access-application-aud-tag
-ACCESS_ALLOWED_EMAILS=
+```bash
+docker network create perezdev_proxy
 ```
 
-`ACCESS_ALLOWED_EMAILS` is optional. Leave it blank to rely on the Cloudflare
-Access policy, or set a comma-separated email allowlist for defense in depth.
-
-In Cloudflare Zero Trust, add a public hostname to that tunnel:
+In the existing Cloudflare/proxy stack, route the public hostname to this app:
 
 - Hostname: `gabbys-cookbook.perezdev.com`
 - Type: `HTTP`
-- Service URL: `http://cookbook:8789`
+- Service URL: `http://my-cookbook:8789`
 
 Then create a Cloudflare Access self-hosted application for the private upload
 surface:
@@ -51,19 +54,15 @@ surface:
 - Policy: allow only the emails, groups, or identity provider rules that should
   submit and review uploads.
 
-Copy the application's Audience (AUD) tag into `CLOUDFLARE_ACCESS_AUD`. Use
-your Zero Trust team domain for `CLOUDFLARE_ACCESS_TEAM_DOMAIN`, for example
-`https://your-team.cloudflareaccess.com`.
-
-Then build and start the site and its tunnel connector:
+Then build and start the site:
 
 ```bash
 docker compose up --build -d
 ```
 
-Open `https://gabbys-cookbook.perezdev.com` after the tunnel reports healthy.
+Open `https://gabbys-cookbook.perezdev.com` after the proxy route is active.
 The production service is intentionally not published on a host port.
-`cookbook:8789` is only reachable by containers on `cookbook-network`.
+`my-cookbook:8789` is only reachable by containers on `perezdev_proxy`.
 
 The production image:
 
@@ -87,7 +86,7 @@ rsync -av --delete ./ your-user@your-vm-ip:/opt/my-cookbook/
 ssh your-user@your-vm-ip
 ```
 
-3. Create the deployment environment file and set the dedicated tunnel token:
+3. Create the deployment environment file:
 
 ```bash
 cp .env.example .env
@@ -105,34 +104,29 @@ docker compose up --build -d
 
 ```bash
 docker compose ps
-docker compose logs cloudflared
-docker compose exec cookbook wget -qO- http://127.0.0.1:8789/
+docker compose exec my-cookbook wget -qO- http://127.0.0.1:8789/
 ```
 
-All three containers join the Compose-managed `cookbook-network`. The tunnel
-reaches Nginx using the Compose service name `cookbook`, not a hostname that
-your host computer or browser can resolve.
-
-Use a tunnel dedicated to this stack. Reusing the tunnel from another isolated
-Compose project can cause requests to reach a connector that has no route to
-the `cookbook` container.
+Both cookbook containers join the external `perezdev_proxy` network. The
+existing proxy reaches Nginx using `my-cookbook:8789`, not a hostname that your
+host computer or browser can resolve.
 
 ## Recommended VM hardening
 
-- Keep inbound port `8789` closed at the firewall; the tunnel reaches the
-  container over its private Docker network.
+- Keep inbound port `8789` closed at the firewall; the proxy reaches the
+  container over the external Docker network.
 - Port `8789` is not one of Cloudflare's default HTTP proxy ports. Use the
-  Tunnel service URL above rather than pointing a proxied DNS record directly
-  to `:8789`.
+  proxy service URL above rather than pointing a proxied DNS record directly to
+  `:8789`.
 
 ## Recipe image submissions
 
 - Users submit batches at `https://gabbys-cookbook.perezdev.com/submit/`.
 - Review and delete submissions at
   `https://gabbys-cookbook.perezdev.com/admin/uploads/`.
-- The submit, review, and upload API routes are protected by Cloudflare Access.
-  The upload API validates the `Cf-Access-Jwt-Assertion` token against
-  Cloudflare's signing keys and this application's AUD tag.
+- The submit, review, and upload API routes should be protected by Cloudflare
+  Access in the Cloudflare dashboard/proxy layer. The upload API trusts that
+  anything reaching `/api/*` came through that protected route.
 - Images and manifests are stored in the private Docker volume
   `my-cookbook_cookbook-uploads` and are never served directly by Nginx.
 - The upload API accepts validated JPEG, PNG, and WebP files, with a maximum of

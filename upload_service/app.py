@@ -11,7 +11,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any
 
-import jwt
 from fastapi import (
     Depends,
     FastAPI,
@@ -23,11 +22,9 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.responses import FileResponse
-from jwt import InvalidTokenError, PyJWKClient
 from PIL import Image, UnidentifiedImageError
 
 
-ACCESS_JWT_HEADER = "cf-access-jwt-assertion"
 MAX_IMAGES = 20
 MAX_IMAGE_BYTES = 15 * 1024 * 1024
 MAX_TOTAL_BYTES = 90 * 1024 * 1024
@@ -42,55 +39,18 @@ Image.MAX_IMAGE_PIXELS = 50_000_000
 warnings.simplefilter("error", Image.DecompressionBombWarning)
 
 
-def _truthy(value: str | None) -> bool:
-    return (value or "").strip().lower() in {"1", "true", "yes", "on"}
-
-
-def _normalize_team_domain(value: str) -> str:
-    value = value.strip().rstrip("/")
-    if value and not value.startswith(("https://", "http://")):
-        value = f"https://{value}"
-    return value
-
-
-def _email_set(value: str | None) -> frozenset[str]:
-    return frozenset(
-        email.strip().lower() for email in (value or "").split(",") if email.strip()
-    )
-
-
 @dataclass(frozen=True)
 class Settings:
     upload_root: Path
     allowed_origin: str
-    access_team_domain: str
-    access_aud: str
-    access_allowed_emails: frozenset[str]
-    access_auth_bypass: bool = False
 
     @classmethod
     def from_environment(cls) -> "Settings":
-        access_auth_bypass = _truthy(os.environ.get("ACCESS_AUTH_BYPASS"))
-        access_team_domain = _normalize_team_domain(
-            os.environ.get("CLOUDFLARE_ACCESS_TEAM_DOMAIN", "")
-        )
-        access_aud = os.environ.get("CLOUDFLARE_ACCESS_AUD", "").strip()
-
-        if not access_auth_bypass:
-            if not access_team_domain:
-                raise RuntimeError("CLOUDFLARE_ACCESS_TEAM_DOMAIN must be set")
-            if not access_aud:
-                raise RuntimeError("CLOUDFLARE_ACCESS_AUD must be set")
-
         return cls(
             upload_root=Path(os.environ.get("UPLOAD_ROOT", "/data/uploads")).resolve(),
             allowed_origin=os.environ.get(
                 "ALLOWED_ORIGIN", "https://gabbys-cookbook.perezdev.com"
             ).rstrip("/"),
-            access_team_domain=access_team_domain,
-            access_aud=access_aud,
-            access_allowed_emails=_email_set(os.environ.get("ACCESS_ALLOWED_EMAILS")),
-            access_auth_bypass=access_auth_bypass,
         )
 
 
@@ -103,11 +63,6 @@ class AccessIdentity:
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings.from_environment()
     settings.upload_root.mkdir(parents=True, exist_ok=True)
-    jwk_client = (
-        None
-        if settings.access_auth_bypass
-        else PyJWKClient(f"{settings.access_team_domain}/cdn-cgi/access/certs")
-    )
 
     app = FastAPI(
         title="Cookbook upload service",
@@ -127,47 +82,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if request.headers.get("origin", "").rstrip("/") != settings.allowed_origin:
             raise HTTPException(status_code=403, detail="Request origin is not allowed")
 
-    def require_authenticated(request: Request) -> AccessIdentity:
-        if settings.access_auth_bypass:
-            return AccessIdentity(email="local-dev", subject="local-dev")
-
-        access_jwt = request.headers.get(ACCESS_JWT_HEADER)
-        if not access_jwt:
-            raise HTTPException(
-                status_code=401, detail="Cloudflare Access authentication required"
-            )
-
-        try:
-            if jwk_client is None:
-                raise RuntimeError("Cloudflare Access validator was not configured")
-            signing_key = jwk_client.get_signing_key_from_jwt(access_jwt)
-            payload = jwt.decode(
-                access_jwt,
-                signing_key.key,
-                algorithms=["RS256"],
-                audience=settings.access_aud,
-                issuer=settings.access_team_domain,
-            )
-        except InvalidTokenError as exc:
-            raise HTTPException(
-                status_code=401, detail="Cloudflare Access token is invalid"
-            ) from exc
-        except Exception as exc:
-            raise HTTPException(
-                status_code=503,
-                detail="Cloudflare Access token validation is unavailable",
-            ) from exc
-
-        email = str(payload.get("email") or "").strip().lower()
-        subject = str(payload.get("sub") or "")
-        if (
-            settings.access_allowed_emails
-            and email not in settings.access_allowed_emails
-        ):
-            raise HTTPException(
-                status_code=403, detail="This Cloudflare Access user is not allowed"
-            )
-        return AccessIdentity(email=email, subject=subject)
+    def trusted_proxy_identity(request: Request) -> AccessIdentity:
+        email = request.headers.get("cf-access-authenticated-user-email", "").strip()
+        subject = request.headers.get("cf-access-user-id", "").strip()
+        return AccessIdentity(email=email or "cloudflare-access", subject=subject)
 
     def submission_directory(submission_id: str) -> Path:
         if not SUBMISSION_ID_PATTERN.fullmatch(submission_id):
@@ -274,7 +192,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/admin/session")
     async def session_status(
-        identity: AccessIdentity = Depends(require_authenticated),
+        identity: AccessIdentity = Depends(trusted_proxy_identity),
     ) -> dict[str, str | bool]:
         return {"authenticated": True, "email": identity.email}
 
@@ -284,7 +202,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title: Annotated[str, Form()],
         images: Annotated[list[UploadFile], File()],
         notes: Annotated[str, Form()] = "",
-        _: AccessIdentity = Depends(require_authenticated),
+        _: AccessIdentity = Depends(trusted_proxy_identity),
     ) -> dict[str, Any]:
         verify_origin(request)
         title = title.strip()
@@ -333,7 +251,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/submissions")
     async def list_submissions(
-        _: AccessIdentity = Depends(require_authenticated),
+        _: AccessIdentity = Depends(trusted_proxy_identity),
     ) -> dict[str, list[dict[str, Any]]]:
         submissions: list[dict[str, Any]] = []
         for directory in settings.upload_root.iterdir():
@@ -352,7 +270,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def get_image(
         submission_id: str,
         filename: str,
-        _: AccessIdentity = Depends(require_authenticated),
+        _: AccessIdentity = Depends(trusted_proxy_identity),
     ) -> FileResponse:
         manifest = load_manifest(submission_id)
         image = next(
@@ -370,7 +288,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         submission_id: str,
         filename: str,
         request: Request,
-        _: AccessIdentity = Depends(require_authenticated),
+        _: AccessIdentity = Depends(trusted_proxy_identity),
     ) -> dict[str, Any]:
         verify_origin(request)
         manifest = load_manifest(submission_id)
@@ -390,7 +308,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def delete_submission(
         submission_id: str,
         request: Request,
-        _: AccessIdentity = Depends(require_authenticated),
+        _: AccessIdentity = Depends(trusted_proxy_identity),
     ) -> Response:
         verify_origin(request)
         target = submission_directory(submission_id)
