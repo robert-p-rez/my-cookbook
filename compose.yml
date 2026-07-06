@@ -17,7 +17,7 @@ services:
       upload-api:
         condition: service_healthy
     networks:
-      - cookbook-network
+      - perezdev_proxy
 
   upload-api:
     build: ./upload_service
@@ -26,9 +26,6 @@ services:
     container_name: cookbook-upload-api
     restart: unless-stopped
     environment:
-      CLOUDFLARE_ACCESS_TEAM_DOMAIN: "${CLOUDFLARE_ACCESS_TEAM_DOMAIN:?Set CLOUDFLARE_ACCESS_TEAM_DOMAIN in .env}"
-      CLOUDFLARE_ACCESS_AUD: "${CLOUDFLARE_ACCESS_AUD:?Set CLOUDFLARE_ACCESS_AUD in .env}"
-      ACCESS_ALLOWED_EMAILS: "${ACCESS_ALLOWED_EMAILS:-}"
       ALLOWED_ORIGIN: "https://gabbys-cookbook.perezdev.com"
       UPLOAD_ROOT: /data/uploads
     expose:
@@ -49,34 +46,11 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - cookbook-network
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    pull_policy: always
-    container_name: cookbook-cloudflared
-    restart: unless-stopped
-    command:
-      - tunnel
-      - --no-autoupdate
-      - run
-      - --token
-      - "${CLOUDFLARE_TUNNEL_TOKEN:?Set CLOUDFLARE_TUNNEL_TOKEN in .env}"
-    depends_on:
-      cookbook:
-        condition: service_healthy
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    networks:
-      - cookbook-network
+      - perezdev_proxy
 
 networks:
-  cookbook-network:
-    ipam:
-      config:
-        - subnet: 172.31.251.0/24
+  perezdev_proxy:
+    external: true
 
 volumes:
   cookbook-uploads:

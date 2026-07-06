@@ -1,0 +1,25 @@
+services:
+  reply-network:
+    build: .
+    image: tree_app:latest
+    pull_policy: build
+    container_name: reply-network
+    restart: unless-stopped
+    user: "${APP_UID:-1000}:${APP_GID:-1000}"
+    env_file:
+      - path: .env
+        required: false
+    expose:
+      - "57712"
+    volumes:
+      - ./data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - perezdev_proxy
+
+networks:  
+  perezdev_proxy:    
+    external: true
