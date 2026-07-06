@@ -116,7 +116,8 @@ hide:
     </div>
     <p>
       Search by ingredient, browse by category, or use the print view when it is
-      time to get cooking. No feeds, pop-ups, or life stories between you and dinner.
+      time to get cooking. No feeds, pop-ups, or life stories between you and dinner.<br>
+      <a class="cb-text-link" href="submit/">Submit a recipe <span aria-hidden="true">→</span></a>
     </p>
   </section>
 </div>

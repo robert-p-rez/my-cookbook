@@ -508,6 +508,401 @@ body {
   transform: translateX(0.1rem);
 }
 
+/* Cloudflare Access recipe submissions */
+.cb-upload-app {
+  margin: 2rem 0 4rem;
+}
+
+.cb-auth-panel,
+.cb-upload-panel,
+.cb-review-panel {
+  background: var(--cb-paper);
+  border: 1px solid var(--cb-line);
+  border-radius: 0.85rem;
+  box-shadow: 0 1rem 2.5rem rgb(23 60 53 / 7%);
+  padding: clamp(1.4rem, 4vw, 2.4rem);
+}
+
+.cb-auth-panel {
+  align-items: end;
+  display: grid;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 0.8fr) minmax(17rem, 1.2fr);
+}
+
+.cb-auth-panel h2,
+.cb-panel-heading h2 {
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  margin: 0;
+}
+
+.cb-auth-panel > div > p:last-child {
+  color: var(--cb-ink-soft);
+  font-size: 0.72rem;
+  line-height: 1.55;
+  margin: 0.65rem 0 0;
+}
+
+.cb-auth-form,
+.cb-upload-panel form {
+  margin: 0;
+}
+
+.cb-auth-form label,
+.cb-upload-panel form > label:not(.cb-file-picker) {
+  color: var(--cb-ink);
+  display: block;
+  font-size: 0.67rem;
+  font-weight: 750;
+  margin: 1.2rem 0 0.4rem;
+}
+
+.cb-auth-form > label:first-child,
+.cb-upload-panel form > label:first-child {
+  margin-top: 0;
+}
+
+.cb-auth-form label span,
+.cb-upload-panel label span {
+  color: var(--cb-ink-soft);
+  font-weight: 400;
+}
+
+.cb-auth-form input,
+.cb-upload-panel input[type="text"],
+.cb-upload-panel textarea {
+  background: #fff;
+  border: 1px solid #cad6d0;
+  border-radius: 0.45rem;
+  color: var(--cb-ink);
+  font: inherit;
+  font-size: 0.78rem;
+  outline: none;
+  padding: 0.72rem 0.8rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+  width: 100%;
+}
+
+.cb-auth-form input:focus,
+.cb-upload-panel input[type="text"]:focus,
+.cb-upload-panel textarea:focus {
+  border-color: var(--cb-sage);
+  box-shadow: 0 0 0 0.16rem rgb(125 156 142 / 18%);
+}
+
+.cb-inline-field {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.cb-inline-field .md-button {
+  border-radius: 0.45rem;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.cb-access-actions {
+  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.cb-access-actions .md-button {
+  border-radius: 999px;
+  margin: 0;
+}
+
+.cb-access-identity {
+  color: var(--cb-ink-soft);
+  font-size: 0.62rem;
+  margin: 0;
+}
+
+.cb-panel-heading {
+  align-items: center;
+  border-bottom: 1px solid var(--cb-line);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.2rem;
+}
+
+.cb-panel-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.9rem;
+}
+
+.cb-link-button,
+.cb-image-delete,
+.cb-danger-button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.66rem;
+  font-weight: 750;
+  padding: 0;
+}
+
+.cb-link-button {
+  color: var(--cb-ink);
+}
+
+.cb-link-button:hover,
+.cb-image-delete:hover {
+  color: var(--cb-coral-dark);
+}
+
+.cb-link-button:disabled,
+.cb-image-delete:disabled,
+.cb-danger-button:disabled,
+.cb-upload-app button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.cb-file-picker {
+  align-items: center;
+  background: var(--cb-cream);
+  border: 1px dashed #9eb2a9;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  margin-top: 1.4rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.cb-file-picker:hover {
+  background: #f2eadb;
+  border-color: var(--cb-coral);
+}
+
+.cb-file-picker__icon {
+  align-items: center;
+  background: var(--cb-ink);
+  border-radius: 50%;
+  color: #fff !important;
+  display: flex;
+  font-size: 1.1rem;
+  font-weight: 300 !important;
+  height: 2rem;
+  justify-content: center;
+  margin-bottom: 0.65rem;
+  width: 2rem;
+}
+
+.cb-file-picker strong {
+  color: var(--cb-ink);
+  font-family: var(--cb-serif);
+  font-size: 0.95rem;
+}
+
+.cb-file-picker > span:last-child {
+  font-size: 0.62rem;
+  margin-top: 0.25rem;
+}
+
+.cb-visually-hidden {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.cb-selected-files {
+  color: var(--cb-ink-soft);
+  font-size: 0.66rem;
+  margin-top: 0.8rem;
+}
+
+.cb-selected-files p {
+  color: var(--cb-ink);
+  font-weight: 750;
+  margin: 0;
+}
+
+.cb-selected-files ul {
+  margin: 0.35rem 0 0 1rem;
+}
+
+.cb-form-footer {
+  align-items: center;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+}
+
+.cb-form-footer p {
+  color: var(--cb-ink-soft);
+  font-size: 0.63rem;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 26rem;
+}
+
+.cb-form-footer .md-button {
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.cb-form-status {
+  color: var(--cb-ink-soft);
+  font-size: 0.66rem;
+  min-height: 1em;
+}
+
+.cb-form-status[data-kind="error"] {
+  color: #a2392d;
+}
+
+.cb-form-status[data-kind="success"] {
+  color: #267055;
+  font-weight: 700;
+}
+
+.cb-review-queue {
+  display: grid;
+  gap: 1rem;
+}
+
+.cb-empty-state {
+  background: var(--cb-cream);
+  border-radius: 0.6rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.cb-empty-state strong {
+  color: var(--cb-ink);
+  font-family: var(--cb-serif);
+}
+
+.cb-empty-state p {
+  color: var(--cb-ink-soft);
+  font-size: 0.68rem;
+  margin: 0.3rem 0 0;
+}
+
+.cb-submission-card {
+  border: 1px solid var(--cb-line);
+  border-radius: 0.65rem;
+  padding: 1rem;
+}
+
+.cb-submission-card__heading {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.cb-submission-card__heading h3 {
+  font-size: 1.15rem;
+  margin: 0.2rem 0 0;
+}
+
+.cb-submission-card__date {
+  color: var(--cb-ink-soft);
+  font-size: 0.58rem;
+  text-transform: uppercase;
+}
+
+.cb-danger-button,
+.cb-image-delete {
+  color: #a2392d;
+}
+
+.cb-danger-button {
+  border: 1px solid rgb(162 57 45 / 30%);
+  border-radius: 999px;
+  padding: 0.38rem 0.65rem;
+}
+
+.cb-danger-button:hover {
+  background: #fff2ef;
+  border-color: #a2392d;
+}
+
+.cb-submission-card__notes {
+  background: var(--cb-cream);
+  border-left: 0.15rem solid var(--cb-gold);
+  color: var(--cb-ink-soft);
+  font-size: 0.69rem;
+  line-height: 1.55;
+  margin: 0.9rem 0;
+  padding: 0.7rem 0.8rem;
+  white-space: pre-line;
+}
+
+.cb-upload-image-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.cb-upload-image-grid figure {
+  border: 1px solid var(--cb-line);
+  border-radius: 0.5rem;
+  margin: 0;
+  overflow: hidden;
+}
+
+.cb-upload-image-grid figure > a {
+  background: var(--cb-cream);
+  display: block;
+}
+
+.cb-upload-image-grid img {
+  aspect-ratio: 4 / 3;
+  display: block;
+  object-fit: cover;
+  width: 100%;
+}
+
+.cb-upload-image-grid figcaption {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  padding: 0.55rem;
+}
+
+.cb-upload-image-grid figcaption div {
+  min-width: 0;
+}
+
+.cb-upload-image-grid figcaption strong,
+.cb-upload-image-grid figcaption span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cb-upload-image-grid figcaption strong {
+  color: var(--cb-ink);
+  font-size: 0.58rem;
+}
+
+.cb-upload-image-grid figcaption span {
+  color: var(--cb-ink-soft);
+  font-size: 0.53rem;
+  margin-top: 0.12rem;
+}
+
 @media (max-width: 52rem) {
   .cb-hero {
     grid-template-columns: 1fr;
@@ -528,6 +923,10 @@ body {
 
   .cb-category h3 {
     margin-top: 2.4rem;
+  }
+
+  .cb-upload-image-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -575,6 +974,27 @@ body {
 
   .cb-closing {
     gap: 1rem;
+  }
+
+  .cb-auth-panel {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .cb-inline-field,
+  .cb-form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cb-panel-heading,
+  .cb-submission-card__heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cb-upload-image-grid {
+    grid-template-columns: 1fr;
   }
 
   .md-typeset .ingredients-cols {

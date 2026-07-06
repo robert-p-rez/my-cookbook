@@ -1,8 +1,12 @@
 .git
 .gitignore
+.env
+.env.*
 .idea
 .vs
 .venv
 site
 __pycache__
 *.pyc
+data
+upload_service
