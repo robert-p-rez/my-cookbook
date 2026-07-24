@@ -23,4 +23,5 @@ slow mornings, shared tables, and keeping something good on the counter.
   <a href="mg2/">Morning Glory Muffins</a>
   <a href="raspberry_jam/">Easy Raspberry Jam</a>
   <a href="waffles/">Classic Waffles</a>
+  <a href="zucchini_or_banana_bread/">Zucchini or Banana Bread</a>
 </div>
